@@ -11,13 +11,13 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
 app.use(express.json())
 
+app.use('/sessions', require('./routes/sessions'))
 app.use('/users', require('./routes/users'))
 
 mongoose.connect(process.env.MONGODB_URI, {}, function() {
-    // console.log("Connected to mongo")
+    console.log("Connected to mongo")
 })
 
 app.listen(3000, function() {
-    // console.log("Test")
-    // console.log(`Port ${process.env.PORT}`)
+    console.log(`Port ${process.env.PORT}`)
 })

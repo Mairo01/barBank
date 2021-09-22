@@ -21,6 +21,7 @@ router.post('/', async function(req, res) {
         if (/User validation failed: .*: Path `.*` is required/.test(e.message)) {
             return res.status(400).send({error: e.message})
         }
+        return res.status(500).send({error: e.message})
     }
     return res.status(201).send('')
 })
