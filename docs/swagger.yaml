@@ -1,6 +1,6 @@
 openapi: 3.0.2
 info:
-  title: yabarbank
+  title: barbank
   version: 1.0.0
 paths:
   /users:
@@ -17,7 +17,7 @@ paths:
               $ref: '#/components/schemas/user'
         required: true
       tags:
-        - users
+        - Users
       responses:
         '200':
           description: Successful response.
@@ -44,18 +44,14 @@ paths:
       operationId: createuser
       summary: Create a user
       description: Creates a new instance of a `user`.
-
   /users/current:
     summary: User details
     description: Returns user's details
     get:
-      security:
-        - bearerAuth: []
       tags:
-        - users
+        - Users
       responses:
         '200':
-          description: Returns user's details
           content:
             application/json:
               schema:
@@ -63,13 +59,15 @@ paths:
               examples:
                 User details:
                   value:
-                    accounts: [{
-                      "name": "Main",
-                      "number": "abcaadf109e64d7099027a2776503897fe0",
-                      "balance": 10000000,
-                      "currency": "USD" }]
+                    accounts:
+                      -
+                        name: Main
+                        number: abcaadf109e64d7099027a2776503897fe0
+                        balance: 10000000
+                        currency: USD
                     name: Jack Sparrow
                     username: jack
+          description: Returns user's details
         '400':
           content:
             application/json:
@@ -93,9 +91,11 @@ paths:
                   value:
                     error: Invalid token
           description: Invalid Authorization header
+      security:
+        -
+          bearerAuth: []
       summary: Get user's details
       description: Returns instance of `user`
-
   /sessions:
     summary: Path used to manage the list of sessions.
     description: >-
@@ -115,7 +115,7 @@ paths:
                   password: blackpearl
         required: true
       tags:
-        - sessions
+        - Sessions
       responses:
         '201':
           content:
@@ -139,10 +139,8 @@ paths:
       summary: Create a session
       description: Creates a new instance of a `session`.
     delete:
-      security:
-        - bearerAuth: []
       tags:
-        - sessions
+        - Sessions
       responses:
         '204':
           description: Successful logout
@@ -175,11 +173,87 @@ paths:
                   value:
                     error: Invalid token
           description: Invalid Authorization header
+      security:
+        -
+          bearerAuth: []
+  /transactions:
+    post:
+      requestBody:
+        description: Make a transaction
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/transaction'
+            examples:
+              POST /transactions request body:
+                value:
+                  explanation: BMW
+                  amount: '3000'
+                  currency: USD
+                  accountTo: 5bd8ebc5f91c809008561d3879f5d6f6ced
+                  accountFrom: 5bd745117f1baf723a8930d44fda054ae46
+        required: true
+      tags:
+        - Transactions
+      responses:
+        '201':
+          description: Successful response
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              examples:
+                Invalid amount:
+                  value:
+                    error: Invalid amount
+                Invalid Authorization header format:
+                  value:
+                    error: Invalid authorization header format
+                Invalid explanation:
+                  value:
+                    error: Invalid explanation
+          description: Missing parameter or in incorrect format
+        '401':
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                Missing authorization header:
+                  value:
+                    error: Missing authorization header
+                Invalid Authorization header:
+                  value:
+                    error: Invalid authorization header
+                Invalid token:
+                  value:
+                    error: Invalid token
+          description: Unauthorized
+        '402':
+          content:
+            application/json:
+              examples:
+                Insufficient funds:
+                  value:
+                    error: Insufficient funds
+          description: Insufficient funds
+        '404':
+          content:
+            application/json:
+              examples:
+                AccountFrom does not exist or belong to user:
+                  value:
+                    error: User not found
+                AccountTo does not exist:
+                  value:
+                    error: User not found
+          description: AccountFrom does not belong to user or neither account exists
+      security:
+        -
+          bearerAuth: []
+      summary: Make a transaction
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
   schemas:
     user:
       title: Root Type for user
@@ -210,11 +284,38 @@ components:
     session:
       description: ''
       type: object
+    transaction:
+      description: ''
+      required:
+        - amount
+        - accountTo
+        - accountFrom
+        - explanation
+      type: object
+      properties:
+        amount:
+          description: ''
+          type: number
+        explanation:
+          description: ''
+          minLength: 3
+          type: string
+        accountTo:
+          description: ''
+          minLength: 4
+          type: string
+        accountFrom:
+          description: ''
+          minLength: 4
+          type: string
+  securitySchemes:
+    bearerAuth:
+      scheme: bearer
+      type: http
 tags:
   -
-    name: sessions
+    name: Sessions
     description: ''
   -
-    name: users
+    name: Users
     description: ''
-
