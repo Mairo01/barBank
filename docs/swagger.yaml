@@ -177,6 +177,67 @@ paths:
         -
           bearerAuth: []
   /transactions:
+    get:
+      requestBody: { }
+      tags:
+        - Transactions
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                Transactions History:
+                  value:
+                    - accountFrom: 5bd745117f1baf723a8930d44fda054ae46
+                      accountTo: 5bd8ebc5f91c809008561d3879f5d6f6ced
+                      amount: 1000000
+                      createdAt: '2021-10-07T08:51:51.183Z'
+                      currency: USD
+                      explanation: BMW
+                      id: 615eb52747413a5fffb6d6ec
+                      senderName: Jack Sparrow
+                      status: Failed
+                      statusDetail: Expired
+                    - accountFrom: 5bd745117f1baf723a8930d44fda054ae46
+                      accountTo: 5bd8ebc5f91c809008561d3879f5d6f6ced
+                      amount: 1000000
+                      createdAt: '2021-10-07T12:22:47.582Z'
+                      currency: USD
+                      explanation: BMW
+                      id: 615ee697eacfe99a88afa272
+                      senderName: Jack Sparrow
+                      status: Completed
+                      statusDetail: ''
+          description: Succesful response
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              examples:
+                Invalid Authorization header:
+                  value:
+                    error: Invalid Authorization header format
+          description: Invalid Authorization header format
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+              examples:
+                Missing Authorization header:
+                  value:
+                    error: Missing Authorization header
+                Invalid token:
+                  value:
+                    error: Invalid token
+          description: Invalid Authorization header
+      security:
+        - bearerAuth: [ ]
+      description: Returns history of user's transactions
+      summary: Show transactions
     post:
       requestBody:
         description: Make a transaction
