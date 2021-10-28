@@ -3,7 +3,11 @@ const Transaction = require('../models/Transaction')
 const Account = require('../models/Account')
 const User = require('../models/User')
 const Bank = require('../models/Bank')
+const jose = require('node-jose')
 const {verifyToken, refreshListOfBanksFromCentralBank} = require("../middlewares");
+const fs = require("fs");
+const base64url = require("base64url")
+const axios = require("axios")
 
 function creditAccount(accountFrom, amount) {
     accountFrom.balance -= amount
@@ -25,6 +29,7 @@ router.post('/', verifyToken, async function (req, res) {
         if (!req.body.explanation) {
             return res.status(400).json({error: 'Invalid explanation'})
         }
+
         const bankToPrefix = req.body.accountTo.slice(0, 3)
         let bankTo = await Bank.findOne({bankPrefix: bankToPrefix})
 
@@ -71,8 +76,71 @@ router.post('/', verifyToken, async function (req, res) {
     }
 })
 
-router.post('/b2b', async (req, res) => {
-    return res.send({receiverName: "John Smith", error: "Issue communicating"})
+router.get('/jwks', async function (req, res) {
+    const keystore = jose.JWK.createKeyStore()
+    await keystore.add(fs.readFileSync('./private.key').toString(), 'pem')
+    return res.send(keystore.toJSON())
 })
+
+router.post('/b2b', async function (req, res) {
+    try {
+        const components = req.body.jwt.split('.')
+        const payload = JSON.parse(base64url.decode(components[1]))
+        const accountTo = await Account.findOne({number: payload.accountTo})
+        const accountFromBankPrefix = payload.accountFrom.substring(0, 3)
+        const accountFromBank = await Bank.findOne({bankPrefix: accountFromBankPrefix})
+
+        if (!accountTo) {
+            return res.status(404).send({error: 'Account not found'})
+        }
+
+        if (!accountFromBank) {
+            const result = await refreshListOfBanksFromCentralBank();
+            if (typeof result.error !== 'undefined') {
+                return res.status(502).send({error: "There was an error communication with Central Bank" + result.error});
+            }
+            const accountFromBank = await Bank.findOne({bankPrefix: accountFromBankPrefix})
+
+            if (!accountFromBank) {
+                return res.status(404).send({error: 'Bank ' + accountFromBankPrefix + ' was not found in Central Bank'})
+            }
+        }
+
+        if (accountTo.currency !== payload.currency) {
+            const rate = await getRates(payload.currency, accountTo.currency)
+            payload.amount = parseInt((parseInt(payload.amount) * parseFloat(rate)).toFixed(0))
+        }
+
+        const accountToUser = await User.findOne({_id: accountTo.userId})
+        accountTo.balance += payload.amount
+        accountTo.save();
+
+        await Transaction.create({
+            accountFrom: payload.accountFrom,
+            accountTo: payload.accountTo,
+            amount: payload.amount,
+            currency: payload.currency,
+            createdAt: payload.createdAt,
+            explanation: payload.explanation,
+            senderName: payload.senderName,
+            receiverName: accountToUser.name,
+            status: 'Completed',
+            statusDetail: ''
+        })
+        res.send({receiverName: accountToUser.name})
+
+    } catch (e) {
+        return res.status(500).send({error: e.message})
+    }
+})
+
+async function getRates(from, to) {
+    const response = await axios.get('https://api.exchangerate.host/latest?base=' + from)
+    for (const rate in response.data.rates) {
+        if (rate === to) {
+            return response.data.rates[rate]
+        }
+    }
+}
 
 module.exports = router

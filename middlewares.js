@@ -63,11 +63,6 @@ function isExpired(transaction) {
     return new Date > expireDate
 }
 
-function debitAccount(account, amount) {
-    account.balance += amount
-    account.save()
-}
-
 async function setStatus(transaction, status, statusDetail) {
     transaction.status = status
     transaction.statusDetail = statusDetail
@@ -100,6 +95,7 @@ exports.sendPostRequest = async(url, data) => {
 }
 
 exports.sendRequest = async (method, url, data) => {
+    let responseText = '';
     const options = {
         method,
         headers: {'Content-Type': 'application/json'}
@@ -109,13 +105,10 @@ exports.sendRequest = async (method, url, data) => {
     }
     try {
         const response = await fetch(url, options)
-        const responseText = await response.text()
-
+        responseText = await response.text()
         return JSON.parse(responseText)
     } catch (e) {
-        throw Error(JSON.stringify({
-            exceptionMessage: e.message
-        }))
+        throw new Error('sendRequest('+url+'): ' + e.message +  (typeof responseText === 'undefined' ? '': '|' + responseText))
     }
 }
 ``
@@ -136,7 +129,6 @@ exports.processTransactions = async function () {
         await setStatus(transaction, 'In progress', '')
 
         const bankPrefix = transaction.accountTo.substring(0, 3)
-        const localBankPrefix = process.env.BANK_PREFIX
         let destinationBank = await Bank.findOne({bankPrefix})
 
         if (!destinationBank) {
@@ -162,15 +154,9 @@ exports.processTransactions = async function () {
                 senderName: transaction.senderName,
             }))
 
-            if (typeof response.error !== 'undefined') throw Error(response.error)
+            if (typeof response.error !== 'undefined') return await setStatus(transaction, 'Failed', response.error)
 
             transaction.receiverName = response.receiverName
-
-            if (destinationBank.bankPrefix === localBankPrefix) {
-                const accountTo = await Account.findOne({"number": transaction.accountTo})
-                if (!accountTo) throw new Error('AccountTo not found')
-                debitAccount(accountTo, transaction.amount)
-            }
 
             return await setStatus(transaction, 'Completed', '')
 

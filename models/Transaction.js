@@ -9,7 +9,7 @@ module.exports = mongoose.model('Transactions', mongoose.Schema({
     currency: {type: String, required: true, default: 'USD', minlength: 2},
     senderName: {type: String},
     receiverName: {type: String},
-    status: {type: String},
+    status: {type: String, required: true, default: 'Pending'},
     statusDetail: {type: String}
 }, {
     toJSON: {
