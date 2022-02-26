@@ -1,0 +1,124 @@
+#root {
+    display: grid;
+    grid-template-columns: auto minmax(10vw, 90vw) auto;
+    height: 100vh;
+}
+
+.App {
+    grid-column: 2;
+    margin-bottom: 5%;
+    background-color: #f6f6f6;
+}
+
+.App-header h1 {
+    padding: 50px 0;
+    text-align: center;
+    font-size: 2.5em;
+    background-color: white;
+}
+
+.App-header-nav {
+    display: grid;
+    grid-template-columns: 1fr 5fr 1fr;
+    font-size: 1.5em;
+    background-color: #eee;
+}
+
+.App-header-nav-links {
+    grid-column: 2;
+    justify-self: center;
+    text-align: center;
+}
+
+.App-header-nav-links .active {
+    background-color: #ddd;
+}
+
+.App-header-nav-links a {
+    display: inline-flex;
+    text-decoration: none;
+    padding: 5px 15px;
+    color: #313131;
+    transition: 150ms;
+}
+
+.App-header-nav-links a:hover {
+    background-color: #ddd;
+    transition: 150ms;
+}
+
+.App-header-nav-login {
+    grid-column: 3;
+    justify-self: end;
+    align-self: center;
+    font-size: 0.7em;
+}
+
+.App-header-nav-login > div {
+    padding: 9px 0;
+}
+
+.App-header-nav-login:hover {
+    cursor: pointer;
+}
+
+.App-content > div {
+    margin: 35px 45px 35px 45px;
+    font-size: 1.05em;
+}
+
+.App-content > * {
+    animation: smoothLoad 0.5s;
+}
+
+@keyframes smoothLoad {
+    from { opacity: 0 }
+    to { opacity: 1 }
+}
+
+form {
+    margin: 0 auto;
+    width: 300px;
+    max-width: 100%;
+}
+
+form input, form textarea {
+    display: block;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    margin: 10px auto 0 auto;
+    padding: 0 10px;
+    height: 30px;
+    width: 300px;
+    max-width: 100%;
+    font-size: .9rem;
+}
+
+form textarea {
+    resize: none;
+    height: auto;
+    padding: 5px 10px;
+    font-family: "Arial", sans-serif;
+}
+
+form textarea::-webkit-scrollbar {
+    display: none;
+}
+
+form input[type=submit] {
+    background-color: #c2c2c2;
+}
+
+form .error-message {
+    padding: 5px 0 0 5px;
+    max-width: 100%;
+    font-size: .8rem;
+    color: #f83e3e;
+}
+
+form .success {
+    padding-top: 5px;
+    max-width: 100%;
+    text-align: center;
+    color: #126312;
+}

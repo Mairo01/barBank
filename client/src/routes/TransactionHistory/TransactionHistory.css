@@ -1,0 +1,14 @@
+.transaction {
+    margin-top: 25px;
+    padding-top: 25px;
+    border-top: 1px solid black;
+}
+
+.transaction-id,
+.transaction-receiverNr {
+    word-break: break-all;
+}
+
+.transaction > div {
+    padding: 5px 0;
+}

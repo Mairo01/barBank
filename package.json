@@ -15,7 +15,9 @@
     "yamljs": "^0.3.0"
   },
   "scripts": {
-    "dev": "nodemon -e yaml,js index.js"
+    "client": "cd client && nodemon start",
+    "server": "nodemon -e yaml,js index.js",
+    "dev": "concurrently \"nodemon yaml.js index.js\" \"cd client && nodemon start\""
   },
   "author": "",
   "license": "ISC",

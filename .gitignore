@@ -3,3 +3,4 @@
 .env
 private.key
 public.key
+./client/node_modules/
